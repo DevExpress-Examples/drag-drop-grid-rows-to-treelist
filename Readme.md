@@ -1,3 +1,10 @@
+<!-- default file list -->
+*Files to look at*:
+
+* [Form1.cs](./CS/DragAndDropRows/Form1.cs) (VB: [Form1.vb](./VB/DragAndDropRows/Form1.vb))
+* [Person.cs](./CS/DragAndDropRows/Person.cs) (VB: [Person.vb](./VB/DragAndDropRows/Person.vb))
+* [Program.cs](./CS/DragAndDropRows/Program.cs) (VB: [Program.vb](./VB/DragAndDropRows/Program.vb))
+<!-- default file list end -->
 # How to: Drag-and-Drop GridControl Rows to the TreeList
 
 
