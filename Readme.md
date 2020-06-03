@@ -7,6 +7,11 @@
 <!-- default file list end -->
 # How to: Drag-and-Drop GridControl Rows to the TreeList
 
+<strong>Starting with version 17.2, you can attach <a href="https://documentation.devexpress.com/WindowsForms/118656/Common-Features/Behaviors/Drag-And-Drop-Behavior">Drag And Drop Behavior</a> to GridControl and TreeList to implement drag-and-drop</strong>
+
+
+
+<strong>For earlier versions:</strong>
 
 <p>This example demonstrates how to drag-and-drop rows from the Grid Control to the Tree List control. To support drag-and-drop operations within the GridView, set the <strong>ColumnViewOptionsBehavior.EditorShowMode</strong> property to either <strong>MouseUp</strong> or <strong>Click</strong>. This prevents a cell editor from being opened on the <strong>MouseDown</strong> event, as this event is used for initialization of drag-and drop operations. To allow the Tree List to accept data dropped onto it, set its <strong>AllowDrop</strong> property to <strong>true</strong>. <br>The <strong>TreeList.GetDXDragEventArgs</strong> method is used to convert drag event arguments to the <strong>DXDragEventArgs</strong> type. This allows you to get extended drag-and-drop parameters. The following parameters are used in this example
 
