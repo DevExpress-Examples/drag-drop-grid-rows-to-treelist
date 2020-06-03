@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.gridControl = new DevExpress.XtraGrid.GridControl();
             this.gridView = new DevExpress.XtraGrid.Views.Grid.GridView();
             this.treeList = new DevExpress.XtraTreeList.TreeList();
@@ -47,8 +48,6 @@
             this.gridControl.TabIndex = 0;
             this.gridControl.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gridView});
-            this.gridControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gridControl_MouseDown);
-            this.gridControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.gridControl_MouseMove);
             // 
             // gridView
             // 
@@ -63,9 +62,6 @@
             this.treeList.Name = "treeList";
             this.treeList.Size = new System.Drawing.Size(505, 336);
             this.treeList.TabIndex = 1;
-            this.treeList.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeList_DragDrop);
-            this.treeList.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeList_DragEnter);
-            this.treeList.DragOver += new System.Windows.Forms.DragEventHandler(this.treeList_DragOver);
             // 
             // labelControl1
             // 
@@ -101,6 +97,5 @@
         private DevExpress.XtraGrid.Views.Grid.GridView gridView;
         private DevExpress.XtraTreeList.TreeList treeList;
         private DevExpress.XtraEditors.LabelControl labelControl1;
-
     }
 }

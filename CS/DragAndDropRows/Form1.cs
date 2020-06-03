@@ -12,20 +12,19 @@ using DevExpress.XtraGrid;
 using DevExpress.XtraTreeList.Nodes;
 using DevExpress.XtraTreeList.Columns;
 using DevExpress.XtraEditors;
-
+using DevExpress.Utils.DragDrop;
+using DevExpress.Utils.Behaviors;
 
 namespace DragAndDropRows {
     public partial class Form1 : XtraForm {
 
-        GridHitInfo hitInfo = null;
         BindingList<Person> gridDataSource = new BindingList<Person>();
-
         public Form1() {
             InitializeComponent();
             InitGrid();
             InitTreeList();
+            InitDragDrop();
         }
-
         void InitGrid() {
             gridDataSource.Add(new Person("John", "Smith", "USA"));
             gridDataSource.Add(new Person("Michael", "Suyama", "UK"));
@@ -44,75 +43,75 @@ namespace DragAndDropRows {
             treeList.KeyFieldName = "ID";
             // Specify the data source field identifying the parent key field.
             treeList.ParentFieldName = "ParentID";
-            // Allow the control to accept data dropped onto it.
-            treeList.AllowDrop = true;
             // Allow tree indents to be interpreted as parts of rows. 
             // The TargetNode parameter of the TreeList.DragDrop event will return a proper node, when dropping over tree indents. 
             treeList.OptionsView.ShowIndentAsRowStyle = true;
         }
-   
-        private void gridControl_MouseDown(object sender, MouseEventArgs e) {
-            hitInfo = gridView.CalcHitInfo(new Point(e.X, e.Y));
-        }
 
-        // Initialize a drag-and-drop operation.
-        private void gridControl_MouseMove(object sender, MouseEventArgs e) {
-            if (hitInfo == null) return;
-            if (e.Button != MouseButtons.Left) return;
-            Rectangle dragRect = new Rectangle(new Point(
-                hitInfo.HitPoint.X - SystemInformation.DragSize.Width / 2,
-                hitInfo.HitPoint.Y - SystemInformation.DragSize.Height / 2), SystemInformation.DragSize);
-            if (!(hitInfo.RowHandle == GridControl.InvalidRowHandle) && !dragRect.Contains(new Point(e.X, e.Y))) {
-                Object data = gridView.GetRow(hitInfo.RowHandle);
-                gridControl.DoDragDrop(data, DragDropEffects.Copy);
-            }
-            
-        }
+        void InitDragDrop() {
+            BehaviorManager behaviorManager1 = new BehaviorManager(this.components);
+            behaviorManager1.Attach<DragDropBehavior>(gridView, behavior => {
+                behavior.Properties.AllowDrop = false;
+                behavior.Properties.InsertIndicatorVisible = true;
+                behavior.Properties.PreviewVisible = true;
+            });
 
-        private void treeList_DragEnter(object sender, DragEventArgs e) {
-            e.Effect = DragDropEffects.Copy;
+            behaviorManager1.Attach<DragDropBehavior>(treeList, behavior => {
+                behavior.Properties.AllowDrop = true;
+                behavior.Properties.InsertIndicatorVisible = true;
+                behavior.Properties.PreviewVisible = true;
+                behavior.DragOver += OnDragOver;
+                behavior.DragDrop += OnDragDrop;
+            });
         }
+        private void OnDragDrop(object sender, DevExpress.Utils.DragDrop.DragDropEventArgs e) {
+            var indexes = e.GetData<IEnumerable<int>>();
+            if(indexes == null)
+                return;
+            var destNode = GetDestNode(e.Location);
+            int destIndex = CalcDestNodeIndex(e, destNode);
+            treeList.BeginUpdate();
 
-        // Add a node to the TreeList when a grid row is dropped.
-        private void treeList_DragDrop(object sender, DragEventArgs e) {
-            // Get extended arguments of the drag event.
-            DXDragEventArgs args = treeList.GetDXDragEventArgs(e);
-            // Get how a node is inserted (as a child, before or after a node, or at the end of the node collection).
-            DragInsertPosition position = args.DragInsertPosition;
-            Person dataRow = e.Data.GetData(typeof(DragAndDropRows.Person)) as Person;
-            if (dataRow == null) return;
-            int parentID = (int)treeList.RootValue;
-            // Get the node over which the row is dropped.
-            TreeListNode node = args.TargetNode;
-            // Add a node at the root level.
-            if (node == null) {
-                treeList.AppendNode((new PersonEx(dataRow, parentID)).ToArray(), null);
-            }
-            else {
-                // Add a child node to the target node.
-                if (position == DragInsertPosition.AsChild) {
-                    parentID = Convert.ToInt32(node.GetValue("ID"));
-                    Object[] targetObject = (new PersonEx(dataRow, parentID)).ToArray(); 
-                    treeList.AppendNode(targetObject, node);
+            foreach(int _index in indexes) {
+                var person = gridDataSource[_index];
+                int parentID = -1;
+                if(destNode != null)
+                    parentID = (int)destNode["ID"];
+                TreeListNode node = treeList.AppendNode(new PersonEx(person, parentID).ToArray(), destIndex == -1000 ? destNode : null);
+                if(destIndex > -1) {
+                    treeList.MoveNode(node, destNode.ParentNode, true, destIndex);
+                    destIndex++;
                 }
-                // Insert a node before the taget node.
-                if (position == DragInsertPosition.Before) {
-                    parentID = Convert.ToInt32(node.GetValue("ParentID"));
-                    Object[] targetObject = (new PersonEx(dataRow, parentID)).ToArray();
-                    TreeListNode newNode = treeList.AppendNode(targetObject, node.ParentNode);
-                    int targetPosition;
-                    if (node.ParentNode == null)
-                        targetPosition = treeList.Nodes.IndexOf(node);
-                    else targetPosition = node.ParentNode.Nodes.IndexOf(node);
-                    treeList.SetNodeIndex(newNode, targetPosition);
-                }
-                node.Expanded = true;
+                if(node.ParentNode != null)
+                    node.ParentNode.Expand();
             }
+            treeList.EndUpdate();
+        }
+        TreeListNode GetDestNode(Point hitPoint) {
+            Point pt = treeList.PointToClient(hitPoint);
+            var ht = treeList.CalcHitInfo(pt);
+            TreeListNode destNode = ht.Node;
+            if(destNode is TreeListAutoFilterNode)
+                return null;
+            return destNode;
+        }
+        int CalcDestNodeIndex(DragDropEventArgs e, TreeListNode destNode) {
+            if(destNode == null)
+                return -1;
+            if(e.InsertType == InsertType.AsChild)
+                return -1000;
+            var nodes = destNode.ParentNode == null ? treeList.Nodes : destNode.ParentNode.Nodes;
+            int index = nodes.IndexOf(destNode);
+            if(e.InsertType == InsertType.After)
+                return ++index;
+            return index;
         }
 
-        private void treeList_DragOver(object sender, DragEventArgs e) {
-            e.Effect = DragDropEffects.Copy;
+        private void OnDragOver(object sender, DevExpress.Utils.DragDrop.DragOverEventArgs e) {
+            e.Default();
+            e.Action = DragDropActions.Copy;
+            e.Handled = true;
+            e.Cursor = Cursors.Default;
         }
-
     }
 }
