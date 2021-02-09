@@ -17,6 +17,13 @@
 
 * <strong>DXDragEventArgsDrag.TargetNode</strong> - the target node over which the row is dropped;<br>- <strong>DXDragEventArgsDrag.DragInsertPosition</strong> - specifies how a node is inserted (as a child, before or after a node, or at the end of the node collection).<br>The TreeList is bound to a <strong>BindingList</strong> data source. Nodes are added using the <strong>AppendNode</strong> method overload, which takes an array of column values as a parameter. The order of values in this array should match the order of the public properties in the data source.<br><br></p>
 
+
+<b>See also:</b>
+
+[DevExpress WinForms Cheat Sheet - Drag-and-Drop Within/Between Controls](https://go.devexpress.com/CheatSheets_WinForms_Examples_T949086.aspx)
+
+[DevExpress WinForms Troubleshooting - Grid Control](https://go.devexpress.com/CheatSheets_WinForms_Examples_T934742.aspx)
+
 <br/>
 
 
