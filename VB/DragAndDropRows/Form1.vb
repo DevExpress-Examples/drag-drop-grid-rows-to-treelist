@@ -1,125 +1,117 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports System.ComponentModel
-Imports System.Data
-Imports System.Drawing
-Imports System.Linq
-Imports System.Text
-Imports System.Windows.Forms
-Imports DevExpress.XtraGrid.Views.Grid.ViewInfo
-Imports DevExpress.XtraTreeList
-Imports DevExpress.XtraGrid
-Imports DevExpress.XtraTreeList.Nodes
-Imports DevExpress.XtraTreeList.Columns
+﻿Imports System.ComponentModel
+Imports DevExpress.Utils.Behaviors
+Imports DevExpress.Utils.DragDrop
 Imports DevExpress.XtraEditors
-
+Imports DevExpress.XtraGrid
+Imports DevExpress.XtraTreeList
+Imports DevExpress.XtraTreeList.Nodes
 
 Namespace DragAndDropRows
-    Partial Public Class Form1
-        Inherits XtraForm
+	Partial Public Class Form1
+		Inherits XtraForm
 
-        Private hitInfo As GridHitInfo = Nothing
-        Private gridDataSource As New BindingList(Of Person)()
+		Private gridDataSource As New BindingList(Of Person)()
+		Public Sub New()
+			InitializeComponent()
+			InitGrid()
+			InitTreeList()
+			InitDragDrop()
+		End Sub
+		Private Sub InitGrid()
+			gridDataSource.Add(New Person("John", "Smith", "USA"))
+			gridDataSource.Add(New Person("Michael", "Suyama", "UK"))
+			gridDataSource.Add(New Person("Laura", "Callahan", "UK"))
+			gridDataSource.Add(New Person("Gerard", "Blain", "France"))
+			gridDataSource.Add(New Person("Sergio", "Rubini", "Italy"))
+			gridDataSource.Add(New Person("Andrew", "Fuller", "USA"))
+			gridControl.DataSource = gridDataSource
+			' Enable support for drag-and-drop operations within the View.
+			gridView.OptionsBehavior.EditorShowMode = DevExpress.Utils.EditorShowMode.Click
+		End Sub
 
-        Public Sub New()
-            InitializeComponent()
-            InitGrid()
-            InitTreeList()
-        End Sub
+		Private Sub InitTreeList()
+			treeList.DataSource = New BindingList(Of PersonEx)()
+			' Specify the key field in the data source.
+			treeList.KeyFieldName = "ID"
+			' Specify the data source field identifying the parent key field.
+			treeList.ParentFieldName = "ParentID"
+			' Allow tree indents to be interpreted as parts of rows. 
+			' The TargetNode parameter of the TreeList.DragDrop event will return a proper node, when dropping over tree indents. 
+			treeList.OptionsView.ShowIndentAsRowStyle = True
+		End Sub
 
-        Private Sub InitGrid()
-            gridDataSource.Add(New Person("John", "Smith", "USA"))
-            gridDataSource.Add(New Person("Michael", "Suyama", "UK"))
-            gridDataSource.Add(New Person("Laura", "Callahan", "UK"))
-            gridDataSource.Add(New Person("Gerard", "Blain", "France"))
-            gridDataSource.Add(New Person("Sergio", "Rubini", "Italy"))
-            gridDataSource.Add(New Person("Andrew", "Fuller", "USA"))
-            gridControl.DataSource = gridDataSource
-            ' Enable support for drag-and-drop operations within the View.
-            gridView.OptionsBehavior.EditorShowMode = DevExpress.Utils.EditorShowMode.Click
-        End Sub
+		Private Sub InitDragDrop()
+			Dim behaviorManager1 As New BehaviorManager(Me.components)
+			behaviorManager1.Attach(Of DragDropBehavior)(gridView, Sub(behavior)
+																	   behavior.Properties.AllowDrop = False
+																	   behavior.Properties.InsertIndicatorVisible = True
+																	   behavior.Properties.PreviewVisible = True
+																   End Sub)
 
-        Private Sub InitTreeList()
-            treeList.DataSource = New BindingList(Of PersonEx)()
-            ' Specify the key field in the data source.
-            treeList.KeyFieldName = "ID"
-            ' Specify the data source field identifying the parent key field.
-            treeList.ParentFieldName = "ParentID"
-            ' Allow the control to accept data dropped onto it.
-            treeList.AllowDrop = True
-            ' Allow tree indents to be interpreted as parts of rows. 
-            ' The TargetNode parameter of the TreeList.DragDrop event will return a proper node, when dropping over tree indents. 
-            treeList.OptionsView.ShowIndentAsRowStyle = True
-        End Sub
+			behaviorManager1.Attach(Of DragDropBehavior)(treeList, Sub(behavior)
+																	   behavior.Properties.AllowDrop = True
+																	   behavior.Properties.InsertIndicatorVisible = True
+																	   behavior.Properties.PreviewVisible = True
+																	   AddHandler behavior.DragOver, AddressOf OnDragOver
+																	   AddHandler behavior.DragDrop, AddressOf OnDragDrop
+																   End Sub)
+		End Sub
+		Private Overloads Sub OnDragDrop(ByVal sender As Object, ByVal e As DevExpress.Utils.DragDrop.DragDropEventArgs)
+			Dim indexes = e.GetData(Of IEnumerable(Of Integer))()
+			If indexes Is Nothing Then
+				Return
+			End If
+			Dim destNode = GetDestNode(e.Location)
+			Dim destIndex As Integer = CalcDestNodeIndex(e, destNode)
+			treeList.BeginUpdate()
 
-        Private Sub gridControl_MouseDown(ByVal sender As Object, ByVal e As MouseEventArgs) Handles gridControl.MouseDown
-            hitInfo = gridView.CalcHitInfo(New Point(e.X, e.Y))
-        End Sub
+			For Each _index As Integer In indexes
+				Dim person = gridDataSource(_index)
+				Dim parentID As Integer = -1
+				If destNode IsNot Nothing Then
+					parentID = DirectCast(destNode("ID"), Integer)
+				End If
+				Dim node As TreeListNode = treeList.AppendNode((New PersonEx(person, parentID)).ToArray(), If(destIndex = -1000, destNode, Nothing))
+				If destIndex > -1 Then
+					treeList.MoveNode(node, destNode.ParentNode, True, destIndex)
+					destIndex += 1
+				End If
+				If node.ParentNode IsNot Nothing Then
+					node.ParentNode.Expand()
+				End If
+			Next _index
+			treeList.EndUpdate()
+		End Sub
+		Private Function GetDestNode(ByVal hitPoint As Point) As TreeListNode
+			Dim pt As Point = treeList.PointToClient(hitPoint)
+			Dim ht = treeList.CalcHitInfo(pt)
+			Dim destNode As TreeListNode = ht.Node
+			If TypeOf destNode Is TreeListAutoFilterNode Then
+				Return Nothing
+			End If
+			Return destNode
+		End Function
+		Private Function CalcDestNodeIndex(ByVal e As DragDropEventArgs, ByVal destNode As TreeListNode) As Integer
+			If destNode Is Nothing Then
+				Return -1
+			End If
+			If e.InsertType = InsertType.AsChild Then
+				Return -1000
+			End If
+			Dim nodes = If(destNode.ParentNode Is Nothing, treeList.Nodes, destNode.ParentNode.Nodes)
+			Dim index As Integer = nodes.IndexOf(destNode)
+			If e.InsertType = InsertType.After Then
+				index += 1
+				Return index
+			End If
+			Return index
+		End Function
 
-        ' Initialize a drag-and-drop operation.
-        Private Sub gridControl_MouseMove(ByVal sender As Object, ByVal e As MouseEventArgs) Handles gridControl.MouseMove
-            If hitInfo Is Nothing Then
-                Return
-            End If
-            If e.Button <> MouseButtons.Left Then
-                Return
-            End If
-            Dim dragRect As New Rectangle(New Point(hitInfo.HitPoint.X - SystemInformation.DragSize.Width \ 2, hitInfo.HitPoint.Y - SystemInformation.DragSize.Height \ 2), SystemInformation.DragSize)
-            If Not (hitInfo.RowHandle = gridControl.InvalidRowHandle) AndAlso (Not dragRect.Contains(New Point(e.X, e.Y))) Then
-                Dim data As Object = gridView.GetRow(hitInfo.RowHandle)
-                gridControl.DoDragDrop(data, DragDropEffects.Copy)
-            End If
-
-        End Sub
-
-        Private Sub treeList_DragEnter(ByVal sender As Object, ByVal e As DragEventArgs) Handles treeList.DragEnter
-            e.Effect = DragDropEffects.Copy
-        End Sub
-
-        ' Add a node to the TreeList when a grid row is dropped.
-        Private Sub treeList_DragDrop(ByVal sender As Object, ByVal e As DragEventArgs) Handles treeList.DragDrop
-            ' Get extended arguments of the drag event.
-            Dim args As DXDragEventArgs = treeList.GetDXDragEventArgs(e)
-            ' Get how a node is inserted (as a child, before or after a node, or at the end of the node collection).
-            Dim position As DragInsertPosition = args.DragInsertPosition
-            Dim dataRow As Person = TryCast(e.Data.GetData(GetType(DragAndDropRows.Person)), Person)
-            If dataRow Is Nothing Then
-                Return
-            End If
-            Dim parentID As Integer = DirectCast(treeList.RootValue, Integer)
-            ' Get the node over which the row is dropped.
-            Dim node As TreeListNode = args.TargetNode
-            ' Add a node at the root level.
-            If node Is Nothing Then
-                Dim parentNode As TreeListNode = Nothing
-                treeList.AppendNode(New PersonEx(dataRow, parentID).ToArray(), parentNode)
-            Else
-                ' Add a child node to the target node.
-                If position = DragInsertPosition.AsChild Then
-                    parentID = Convert.ToInt32(node.GetValue("ID"))
-                    Dim targetObject() As Object = (New PersonEx(dataRow, parentID)).ToArray()
-                    treeList.AppendNode(targetObject, node)
-                End If
-                ' Insert a node before the taget node.
-                If position = DragInsertPosition.Before Then
-                    parentID = Convert.ToInt32(node.GetValue("ParentID"))
-                    Dim targetObject() As Object = (New PersonEx(dataRow, parentID)).ToArray()
-                    Dim newNode As TreeListNode = treeList.AppendNode(targetObject, node.ParentNode)
-                    Dim targetPosition As Integer
-                    If node.ParentNode Is Nothing Then
-                        targetPosition = treeList.Nodes.IndexOf(node)
-                    Else
-                        targetPosition = node.ParentNode.Nodes.IndexOf(node)
-                    End If
-                    treeList.SetNodeIndex(newNode, targetPosition)
-                End If
-                node.Expanded = True
-            End If
-        End Sub
-
-        Private Sub treeList_DragOver(ByVal sender As Object, ByVal e As DragEventArgs) Handles treeList.DragOver
-            e.Effect = DragDropEffects.Copy
-        End Sub
-
-    End Class
+		Private Overloads Sub OnDragOver(ByVal sender As Object, ByVal e As DevExpress.Utils.DragDrop.DragOverEventArgs)
+			e.Default()
+			e.Action = DragDropActions.Copy
+			e.Handled = True
+			e.Cursor = Cursors.Default
+		End Sub
+	End Class
 End Namespace

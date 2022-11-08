@@ -16,13 +16,14 @@
 			MyBase.Dispose(disposing)
 		End Sub
 
-		#Region "Windows Form Designer generated code"
+#Region "Windows Form Designer generated code"
 
 		''' <summary>
 		''' Required method for Designer support - do not modify
 		''' the contents of this method with the code editor.
 		''' </summary>
 		Private Sub InitializeComponent()
+			Me.components = New System.ComponentModel.Container()
 			Me.gridControl = New DevExpress.XtraGrid.GridControl()
 			Me.gridView = New DevExpress.XtraGrid.Views.Grid.GridView()
 			Me.treeList = New DevExpress.XtraTreeList.TreeList()
@@ -40,9 +41,7 @@
 			Me.gridControl.Name = "gridControl"
 			Me.gridControl.Size = New System.Drawing.Size(428, 336)
 			Me.gridControl.TabIndex = 0
-			Me.gridControl.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() { Me.gridView})
-'			Me.gridControl.MouseDown += New System.Windows.Forms.MouseEventHandler(Me.gridControl_MouseDown)
-'			Me.gridControl.MouseMove += New System.Windows.Forms.MouseEventHandler(Me.gridControl_MouseMove)
+			Me.gridControl.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {Me.gridView})
 			' 
 			' gridView
 			' 
@@ -57,9 +56,6 @@
 			Me.treeList.Name = "treeList"
 			Me.treeList.Size = New System.Drawing.Size(505, 336)
 			Me.treeList.TabIndex = 1
-'			Me.treeList.DragDrop += New System.Windows.Forms.DragEventHandler(Me.treeList_DragDrop)
-'			Me.treeList.DragEnter += New System.Windows.Forms.DragEventHandler(Me.treeList_DragEnter)
-'			Me.treeList.DragOver += New System.Windows.Forms.DragEventHandler(Me.treeList_DragOver)
 			' 
 			' labelControl1
 			' 
@@ -73,7 +69,7 @@
 			' 
 			' Form1
 			' 
-			Me.AutoScaleDimensions = New System.Drawing.SizeF(6F, 13F)
+			Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0F, 13.0F)
 			Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
 			Me.ClientSize = New System.Drawing.Size(933, 349)
 			Me.Controls.Add(Me.treeList)
@@ -88,12 +84,11 @@
 
 		End Sub
 
-		#End Region
+#End Region
 
 		Private WithEvents gridControl As DevExpress.XtraGrid.GridControl
 		Private gridView As DevExpress.XtraGrid.Views.Grid.GridView
 		Private WithEvents treeList As DevExpress.XtraTreeList.TreeList
 		Private labelControl1 As DevExpress.XtraEditors.LabelControl
-
 	End Class
 End Namespace
