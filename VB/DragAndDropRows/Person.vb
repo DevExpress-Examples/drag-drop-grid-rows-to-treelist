@@ -2,44 +2,41 @@
 
 Namespace DragAndDropRows
 	Public Class Person
-'INSTANT VB NOTE: The variable firstName was renamed since Visual Basic does not allow variables and other class members to have the same name:
-		Private firstName_Renamed As String
-'INSTANT VB NOTE: The variable lastName was renamed since Visual Basic does not allow variables and other class members to have the same name:
-		Private lastName_Renamed As String
-'INSTANT VB NOTE: The variable country was renamed since Visual Basic does not allow variables and other class members to have the same name:
-		Private country_Renamed As String
+		Private _firstName As String
+		Private _lastName As String
+		Private _country As String
 
 		Public Sub New()
 		End Sub
 		Public Sub New(ByVal firstName As String, ByVal lastName As String, ByVal country As String)
-			Me.firstName_Renamed = firstName
-			Me.lastName_Renamed = lastName
-			Me.country_Renamed = country
+			Me._firstName = firstName
+			Me._lastName = lastName
+			Me._country = country
 		End Sub
 		Public Property FirstName() As String
 			Get
-				Return firstName_Renamed
+				Return _firstName
 			End Get
 			Set(ByVal value As String)
-				firstName_Renamed = value
+				_firstName = value
 			End Set
 		End Property
 
 		Public Property LastName() As String
 			Get
-				Return lastName_Renamed
+				Return _lastName
 			End Get
 			Set(ByVal value As String)
-				lastName_Renamed = value
+				_lastName = value
 			End Set
 		End Property
 
 		Public Property Country() As String
 			Get
-				Return country_Renamed
+				Return _country
 			End Get
 			Set(ByVal value As String)
-				country_Renamed = value
+				_country = value
 			End Set
 		End Property
 
@@ -47,18 +44,15 @@ Namespace DragAndDropRows
 
 	Public Class PersonEx
 		Inherits Person
-
-'INSTANT VB NOTE: The variable id was renamed since Visual Basic does not allow variables and other class members to have the same name:
-		Private id_Renamed As Integer
-'INSTANT VB NOTE: The variable parentID was renamed since Visual Basic does not allow variables and other class members to have the same name:
-		Private parentID_Renamed As Integer
+		Private _id As Integer
+		Private _parentID As Integer
 		Private Shared counter As Integer = 1
 		Public Sub New()
 		End Sub
 		Public Sub New(ByVal firstName As String, ByVal lastName As String, ByVal country As String, ByVal parentID As Integer)
 			MyBase.New(firstName, lastName, country)
-			Me.parentID_Renamed = parentID
-			id_Renamed = counter
+			Me._parentID = parentID
+			_id = counter
 			counter += 1
 		End Sub
 
@@ -68,18 +62,18 @@ Namespace DragAndDropRows
 
 		Public Property ID() As Integer
 			Get
-				Return id_Renamed
+				Return _id
 			End Get
 			Set(ByVal value As Integer)
-				id_Renamed = value
+				_id = value
 			End Set
 		End Property
 		Public Property ParentID() As Integer
 			Get
-				Return parentID_Renamed
+				Return _parentID
 			End Get
 			Set(ByVal value As Integer)
-				parentID_Renamed = value
+				_parentID = value
 			End Set
 		End Property
 		Public Function ToArray() As Object()
