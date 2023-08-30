@@ -54,5 +54,6 @@ In this example:
 
 ## See Also
 
+* [Drag and Drop Appointments from the Grid Control to Scheduler](https://github.com/DevExpress-Examples/how-to-drag-appointments-from-gridview-and-drop-them-onto-the-scheduler-control-using-sche-t179722)
 * [DevExpress WinForms Cheat Sheet - Drag-and-Drop Within/Between Controls](https://go.devexpress.com/CheatSheets_WinForms_Examples_T949086.aspx)
 * [DevExpress WinForms Troubleshooting - Grid Control](https://go.devexpress.com/CheatSheets_WinForms_Examples_T934742.aspx)
