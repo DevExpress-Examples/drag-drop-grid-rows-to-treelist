@@ -80,7 +80,7 @@ Namespace DragAndDropRows
             Dim node As TreeListNode = args.TargetNode
             ' Add a node at the root level.
             If node Is Nothing Then
-                treeList.AppendNode((New PersonEx(CType(dataRow, Person), CInt(parentID))).ToArray(), Nothing)
+                treeList.AppendNode((New PersonEx(dataRow, parentID)).ToArray(), parentNodeId:=Nothing)
             Else
                 ' Add a child node to the target node.
                 If position = DragInsertPosition.AsChild Then
